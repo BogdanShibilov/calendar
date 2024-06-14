@@ -25,14 +25,12 @@ func NewEvents() *events {
 }
 
 func (e *events) Add(event model.Event) (int, error) {
-	e.mu.RLock()
+	e.mu.Lock()
 	_, ok := e.m[event.Id]
-	e.mu.RUnlock()
 	if ok {
 		return -1, storage.ErrAlreadyExists
 	}
 
-	e.mu.Lock()
 	e.m[event.Id] = event
 	e.mu.Unlock()
 
@@ -64,14 +62,12 @@ func (e *events) All() []model.Event {
 }
 
 func (e *events) Update(newEvent model.Event) error {
-	e.mu.RLock()
+	e.mu.Lock()
 	_, ok := e.m[newEvent.Id]
-	e.mu.RUnlock()
 	if !ok {
 		return storage.ErrNotFound
 	}
 
-	e.mu.Lock()
 	e.m[newEvent.Id] = newEvent
 	e.mu.Unlock()
 

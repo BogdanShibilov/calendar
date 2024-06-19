@@ -3,7 +3,7 @@ package event
 import "hwCalendar/storage/inmemory"
 
 func ById(id int) (*Event, error) {
-	event, err := storage.ByKey(inmemory.EventType, id)
+	event, err := mapStorage.ByKey(inmemory.EventType, id)
 	if err != nil {
 		return nil, err
 	}
@@ -12,7 +12,7 @@ func ById(id int) (*Event, error) {
 }
 
 func All() ([]Event, error) {
-	anySlice, err := storage.All(inmemory.EventType)
+	anySlice, err := mapStorage.All(inmemory.EventType)
 	if err != nil {
 		return nil, err
 	}

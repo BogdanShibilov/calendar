@@ -1,12 +1,16 @@
 package event
 
 import (
+	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"hwCalendar/storage"
 	"hwCalendar/storage/inmemory"
 	"math/rand"
 	"time"
 )
 
-var storage = inmemory.GetMapStorage()
+var mapStorage = inmemory.GetMapStorage()
 
 type Event struct {
 	Id          int
@@ -15,7 +19,8 @@ type Event struct {
 	Timestamp   time.Time
 }
 
-func New(id int, name string, desc string, timestamp time.Time) *Event {
+func New(name string, desc string, timestamp time.Time) *Event {
+	id, _ := generateUniqId()
 	return &Event{
 		Id:          id,
 		Name:        name,
@@ -24,13 +29,18 @@ func New(id int, name string, desc string, timestamp time.Time) *Event {
 	}
 }
 
-func NewWithRandomId(name string, desc string, timestamp time.Time) *Event {
-	randId := rand.Intn(2147483647)
-	return &Event{
-		Id:          randId,
-		Name:        name,
-		Description: desc,
-		Timestamp:   timestamp,
+func generateUniqId() (int, error) {
+	var randId int
+	for {
+		randId = rand.Intn(2147483647)
+		_, err := ById(randId)
+		if err != nil {
+			if errors.Is(err, storage.ErrNotFound) {
+				return randId, nil
+			}
+
+			return -1, status.Errorf(codes.Internal, "add event failed: %v", err)
+		}
 	}
 }
 
@@ -39,7 +49,7 @@ func (e *Event) Add() (int, error) {
 		return -1, err
 	}
 
-	id, err := storage.Add(inmemory.EventType, e.Id, e)
+	id, err := mapStorage.Add(inmemory.EventType, e.Id, e)
 	if err != nil {
 		return -1, err
 	}
@@ -47,12 +57,15 @@ func (e *Event) Add() (int, error) {
 	return id.(int), nil
 }
 
-func (e *Event) Update() error {
+func (e *Event) Update(newName, newDesc string) error {
+	e.Name = newName
+	e.Description = newDesc
+
 	if err := validate(e); err != nil {
 		return err
 	}
 
-	err := storage.Update(inmemory.EventType, e.Id, e)
+	err := mapStorage.Update(inmemory.EventType, e.Id, e)
 	if err != nil {
 		return err
 	}
@@ -61,7 +74,7 @@ func (e *Event) Update() error {
 }
 
 func (e *Event) Delete() error {
-	err := storage.Delete(inmemory.EventType, e.Id)
+	err := mapStorage.Delete(inmemory.EventType, e.Id)
 	if err != nil {
 		return err
 	}

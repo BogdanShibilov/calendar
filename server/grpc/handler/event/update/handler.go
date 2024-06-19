@@ -12,9 +12,15 @@ import (
 )
 
 func Handle(_ context.Context, req *eventpb.UpdateEventRequest) (*emptypb.Empty, error) {
-	updatedEvent := eventFromReq(req)
+	id := int(req.Id)
+	e, err := event.ById(id)
+	if err != nil {
+		return nil, handleError(err)
+	}
 
-	err := updatedEvent.Update()
+	mapValues(e, req)
+
+	err = e.Update()
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -22,13 +28,9 @@ func Handle(_ context.Context, req *eventpb.UpdateEventRequest) (*emptypb.Empty,
 	return &emptypb.Empty{}, nil
 }
 
-func eventFromReq(req *eventpb.UpdateEventRequest) *event.Event {
-	return &event.Event{
-		Id:          int(req.Event.Id),
-		Name:        req.Event.Name,
-		Description: req.Event.Description,
-		Timestamp:   req.Event.Timestamp.AsTime(),
-	}
+func mapValues(e *event.Event, req *eventpb.UpdateEventRequest) {
+	e.Name = req.Name
+	e.Description = req.Description
 }
 
 func handleError(err error) error {

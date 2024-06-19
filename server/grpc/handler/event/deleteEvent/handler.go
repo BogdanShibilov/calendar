@@ -10,9 +10,9 @@ import (
 )
 
 func Handle(_ context.Context, req *eventpb.DeleteEventRequest) (*emptypb.Empty, error) {
-	deletedEvent := &event.Event{Id: int(req.Id)}
+	id := int(req.Id)
 
-	err := deletedEvent.Delete()
+	err := event.Delete(id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

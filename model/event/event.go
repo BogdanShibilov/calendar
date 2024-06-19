@@ -2,6 +2,7 @@ package event
 
 import (
 	"hwCalendar/storage/inmemory"
+	"math/rand"
 	"time"
 )
 
@@ -12,6 +13,16 @@ type Event struct {
 	Name        string
 	Description string
 	Timestamp   time.Time
+}
+
+func NewWithRandomId(name string, desc string, timestamp time.Time) *Event {
+	randId := rand.Intn(2147483647)
+	return &Event{
+		Id:          randId,
+		Name:        name,
+		Description: desc,
+		Timestamp:   timestamp,
+	}
 }
 
 func (e *Event) Add() (int, error) {

@@ -18,16 +18,17 @@ func Handle(_ context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventR
 		return nil, handleError(err)
 	}
 
-	return &eventpb.AddEventResponse{Id: int32(id)}, nil
+	return &eventpb.AddEventResponse{
+		Id: int32(id),
+	}, nil
 }
 
 func eventFromReq(req *eventpb.AddEventRequest) *event.Event {
-	return &event.Event{
-		Id:          int(req.Event.Id),
-		Name:        req.Event.Name,
-		Description: req.Event.Description,
-		Timestamp:   req.Event.Timestamp.AsTime(),
-	}
+	return event.NewWithRandomId(
+		req.Name,
+		req.Description,
+		req.Timestamp.AsTime(),
+	)
 }
 
 func handleError(err error) error {

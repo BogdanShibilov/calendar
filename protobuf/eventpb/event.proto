@@ -16,7 +16,9 @@ service EventService {
 }
 
 message AddEventRequest {
-  Event event = 1;
+  string name = 1;
+  string description = 2;
+  google.protobuf.Timestamp timestamp = 3;
 }
 
 message AddEventResponse {
@@ -24,7 +26,9 @@ message AddEventResponse {
 }
 
 message UpdateEventRequest {
-  Event event = 1;
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
 }
 
 message DeleteEventRequest {

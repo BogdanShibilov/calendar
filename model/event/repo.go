@@ -23,3 +23,8 @@ func All() ([]Event, error) {
 	}
 	return events, nil
 }
+
+func Delete(id int) error {
+	deletedEvent := &Event{Id: id}
+	return deletedEvent.Delete()
+}

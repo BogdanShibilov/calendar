@@ -8,12 +8,18 @@ import (
 	"hwCalendar/model/event"
 	"hwCalendar/protobuf/eventpb"
 	"hwCalendar/storage"
+	"math/rand"
 )
 
 func Handle(_ context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventResponse, error) {
-	newEvent := eventFromReq(req)
+	id, err := generateUniqId()
+	if err != nil {
+		return nil, err
+	}
 
-	id, err := newEvent.Add()
+	newEvent := eventFromReq(req, id)
+
+	id, err = newEvent.Add()
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -23,12 +29,28 @@ func Handle(_ context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventR
 	}, nil
 }
 
-func eventFromReq(req *eventpb.AddEventRequest) *event.Event {
-	return event.NewWithRandomId(
+func eventFromReq(req *eventpb.AddEventRequest, id int) *event.Event {
+	return event.New(
+		id,
 		req.Name,
 		req.Description,
 		req.Timestamp.AsTime(),
 	)
+}
+
+func generateUniqId() (int, error) {
+	var randId int
+	for {
+		randId = rand.Intn(2147483647)
+		_, err := event.ById(randId)
+		if err != nil {
+			if errors.Is(err, storage.ErrNotFound) {
+				return randId, nil
+			}
+
+			return -1, status.Errorf(codes.Internal, "add event failed: %v", err)
+		}
+	}
 }
 
 func handleError(err error) error {

@@ -15,6 +15,15 @@ type Event struct {
 	Timestamp   time.Time
 }
 
+func New(id int, name string, desc string, timestamp time.Time) *Event {
+	return &Event{
+		Id:          id,
+		Name:        name,
+		Description: desc,
+		Timestamp:   timestamp,
+	}
+}
+
 func NewWithRandomId(name string, desc string, timestamp time.Time) *Event {
 	randId := rand.Intn(2147483647)
 	return &Event{

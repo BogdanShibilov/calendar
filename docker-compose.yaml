@@ -1,0 +1,16 @@
+services:
+  postgres:
+    container_name: pg
+    image: postgres:latest
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d testpg -U root"]
+      interval: 7s
+      timeout: 10s
+      retries: 7
+      start_period: 10s
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=testpg
+    ports:
+      - "5432:5432"

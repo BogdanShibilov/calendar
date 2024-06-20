@@ -1,16 +1,14 @@
 package event
 
 import (
+	"database/sql"
 	"errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"hwCalendar/storage"
-	"hwCalendar/storage/inmemory"
-	"math/rand"
+	"hwCalendar/storage/postgres"
 	"time"
 )
 
-var mapStorage = inmemory.GetMapStorage()
+var pgStorage = postgres.GetDb()
 
 type Event struct {
 	Id          int
@@ -20,27 +18,10 @@ type Event struct {
 }
 
 func New(name string, desc string, timestamp time.Time) *Event {
-	id, _ := generateUniqId()
 	return &Event{
-		Id:          id,
 		Name:        name,
 		Description: desc,
 		Timestamp:   timestamp,
-	}
-}
-
-func generateUniqId() (int, error) {
-	var randId int
-	for {
-		randId = rand.Intn(2147483647)
-		_, err := ById(randId)
-		if err != nil {
-			if errors.Is(err, storage.ErrNotFound) {
-				return randId, nil
-			}
-
-			return -1, status.Errorf(codes.Internal, "add event failed: %v", err)
-		}
 	}
 }
 
@@ -49,12 +30,16 @@ func (e *Event) Add() (int, error) {
 		return -1, err
 	}
 
-	id, err := mapStorage.Add(inmemory.EventType, e.Id, e)
+	var insertedId int
+	err := pgStorage.QueryRow(
+		"INSERT INTO events (name, description, start_time) VALUES ($1, $2, $3) RETURNING id",
+		e.Name, e.Description, e.Timestamp,
+	).Scan(&insertedId)
 	if err != nil {
 		return -1, err
 	}
 
-	return id.(int), nil
+	return insertedId, nil
 }
 
 func (e *Event) Update(newName, newDesc string) error {
@@ -65,8 +50,14 @@ func (e *Event) Update(newName, newDesc string) error {
 		return err
 	}
 
-	err := mapStorage.Update(inmemory.EventType, e.Id, e)
+	_, err := pgStorage.Exec(
+		"UPDATE events SET name = $1, description = $2 WHERE id = $3",
+		e.Name, e.Description, e.Id,
+	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return storage.ErrNotFound
+		}
 		return err
 	}
 
@@ -74,7 +65,7 @@ func (e *Event) Update(newName, newDesc string) error {
 }
 
 func (e *Event) Delete() error {
-	err := mapStorage.Delete(inmemory.EventType, e.Id)
+	_, err := pgStorage.Exec("DELETE FROM events WHERE id = $1", e.Id)
 	if err != nil {
 		return err
 	}

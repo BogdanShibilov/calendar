@@ -1,0 +1,1 @@
+goose postgres "postgres://root:root@localhost:5432/testpg" up

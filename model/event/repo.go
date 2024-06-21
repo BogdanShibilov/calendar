@@ -25,7 +25,6 @@ func ById(ctx context.Context, id int) (*Event, error) {
 
 func All(ctx context.Context) ([]Event, error) {
 	events := make([]Event, 0)
-	//rows, err := pgStorage.QueryContext(ctx, "SELECT id, name, description, start_time FROM events")
 	rows, err := pgStorage.QueryxContext(ctx, "SELECT id, name, description, start_time FROM events")
 	if err != nil {
 		return nil, err

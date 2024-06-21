@@ -54,10 +54,10 @@ func (e *Event) Update(ctx context.Context, newName, newDesc string) error {
 		return err
 	}
 
-	_, err := pgStorage.ExecContext(
+	_, err := pgStorage.NamedExecContext(
 		ctx,
-		"UPDATE events SET name = $1, description = $2 WHERE id = $3",
-		e.Name, e.Description, e.Id,
+		"UPDATE events SET name = :name, description = :description WHERE id = :id",
+		e,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -70,7 +70,7 @@ func (e *Event) Update(ctx context.Context, newName, newDesc string) error {
 }
 
 func (e *Event) Delete(ctx context.Context) error {
-	_, err := pgStorage.ExecContext(ctx, "DELETE FROM events WHERE id = $1", e.Id)
+	_, err := pgStorage.NamedExecContext(ctx, "DELETE FROM events WHERE id = :id", e)
 	if err != nil {
 		return err
 	}

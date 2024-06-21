@@ -4,6 +4,7 @@ import (
 	"embed"
 	"hwCalendar/migrator"
 	"hwCalendar/server/grpc"
+	"hwCalendar/storage/postgres"
 	"log"
 )
 
@@ -12,7 +13,7 @@ var embedMigrations embed.FS
 
 func main() {
 	migrator.SetBaseFs(embedMigrations)
-	migrator.SetDB(db.DB)
+	migrator.SetDB(postgres.GetDb())
 	if err := migrator.Up("migrations"); err != nil {
 		log.Panicf("failed to get up migrations: %v", err)
 	}

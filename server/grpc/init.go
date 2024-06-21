@@ -17,7 +17,6 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
 )
 
 type Server struct {
@@ -37,37 +36,22 @@ func InitGrpc() {
 }
 
 func (s *Server) AddEvent(ctx context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventResponse, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
-
 	return add.Handle(ctx, req)
 }
 
 func (s *Server) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventRequest) (*emptypb.Empty, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
-
 	return update.Handle(ctx, req)
 }
 
 func (s *Server) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventRequest) (*emptypb.Empty, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
-
 	return deleteEvent.Handle(ctx, req)
 }
 
 func (s *Server) EventById(ctx context.Context, req *eventpb.EventByIdRequest) (*eventpb.EventByIdResponse, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
-
 	return byid.Handle(ctx, req)
 }
 
 func (s *Server) AllEvents(ctx context.Context, req *emptypb.Empty) (*eventpb.AllEventsResponse, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
-	defer cancel()
-
 	return all.Handle(ctx, req)
 }
 

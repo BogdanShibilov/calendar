@@ -1,15 +1,18 @@
 package event
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"hwCalendar/storage"
 )
 
-func ById(id int) (*Event, error) {
+func ById(ctx context.Context, id int) (*Event, error) {
 	var event Event
-	err := pgStorage.QueryRow("SELECT id, name, description, start_time FROM events WHERE id = $1", id).
-		Scan(&event.Id, &event.Name, &event.Description, &event.Timestamp)
+	err := pgStorage.QueryRowxContext(
+		ctx,
+		"SELECT id, name, description, start_time FROM events WHERE id = $1", id,
+	).StructScan(&event)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, storage.ErrNotFound
@@ -20,9 +23,10 @@ func ById(id int) (*Event, error) {
 	return &event, nil
 }
 
-func All() ([]Event, error) {
+func All(ctx context.Context) ([]Event, error) {
 	events := make([]Event, 0)
-	rows, err := pgStorage.Query("SELECT id, name, description, start_time FROM events")
+	//rows, err := pgStorage.QueryContext(ctx, "SELECT id, name, description, start_time FROM events")
+	rows, err := pgStorage.QueryxContext(ctx, "SELECT id, name, description, start_time FROM events")
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +36,7 @@ func All() ([]Event, error) {
 
 	for rows.Next() {
 		var event Event
-		if err := rows.Scan(&event.Id, &event.Name, &event.Description, &event.Timestamp); err != nil {
+		if err := rows.StructScan(&event); err != nil {
 			return nil, err
 		}
 		events = append(events, event)
@@ -41,7 +45,7 @@ func All() ([]Event, error) {
 	return events, nil
 }
 
-func Delete(id int) error {
+func Delete(ctx context.Context, id int) error {
 	deletedEvent := &Event{Id: id}
-	return deletedEvent.Delete()
+	return deletedEvent.Delete(ctx)
 }

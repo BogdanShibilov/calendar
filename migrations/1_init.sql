@@ -1,5 +1,4 @@
 -- +goose Up
--- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS events
 (
     id SERIAL PRIMARY KEY,
@@ -7,9 +6,6 @@ CREATE TABLE IF NOT EXISTS events
     description TEXT NOT NULL,
     start_time TIMESTAMP
 );
--- +goose StatementEnd
 
 -- +goose Down
--- +goose StatementBegin
 DROP TABLE IF EXISTS events;
--- +goose StatementEnd

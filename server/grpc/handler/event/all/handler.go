@@ -2,6 +2,7 @@ package all
 
 import (
 	"context"
+	"errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -10,9 +11,13 @@ import (
 	"hwCalendar/protobuf/eventpb"
 )
 
-func Handle(_ context.Context, _ *emptypb.Empty) (*eventpb.AllEventsResponse, error) {
-	all, err := event.All()
+func Handle(ctx context.Context, _ *emptypb.Empty) (*eventpb.AllEventsResponse, error) {
+	all, err := event.All(ctx)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, err.Error())
+		}
+
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

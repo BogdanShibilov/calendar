@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"os"
 	"sync"
@@ -15,14 +15,14 @@ var (
 )
 
 type DB struct {
-	*sql.DB
+	*sqlx.DB
 }
 
 func GetDb() *DB {
 	once.Do(func() {
 		dsn := os.Getenv("DATABASE_URL")
 
-		db, err := sql.Open("pgx", dsn)
+		db, err := sqlx.Open("pgx", dsn)
 		if err != nil {
 			log.Panicf("failed to connect to database: %v\n", err)
 		}

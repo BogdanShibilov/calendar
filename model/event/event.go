@@ -1,6 +1,7 @@
 package event
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"hwCalendar/storage"
@@ -11,10 +12,10 @@ import (
 var pgStorage = postgres.GetDb()
 
 type Event struct {
-	Id          int
-	Name        string
-	Description string
-	Timestamp   time.Time
+	Id          int       `db:"id"`
+	Name        string    `db:"name"`
+	Description string    `db:"description"`
+	Timestamp   time.Time `db:"start_time"`
 }
 
 func New(name string, desc string, timestamp time.Time) *Event {
@@ -25,13 +26,14 @@ func New(name string, desc string, timestamp time.Time) *Event {
 	}
 }
 
-func (e *Event) Add() (int, error) {
+func (e *Event) Add(ctx context.Context) (int, error) {
 	if err := validate(e); err != nil {
 		return -1, err
 	}
 
 	var insertedId int
-	err := pgStorage.QueryRow(
+	err := pgStorage.QueryRowxContext(
+		ctx,
 		"INSERT INTO events (name, description, start_time) VALUES ($1, $2, $3) RETURNING id",
 		e.Name, e.Description, e.Timestamp,
 	).Scan(&insertedId)
@@ -39,10 +41,12 @@ func (e *Event) Add() (int, error) {
 		return -1, err
 	}
 
+	e.Id = insertedId
+
 	return insertedId, nil
 }
 
-func (e *Event) Update(newName, newDesc string) error {
+func (e *Event) Update(ctx context.Context, newName, newDesc string) error {
 	e.Name = newName
 	e.Description = newDesc
 
@@ -50,7 +54,8 @@ func (e *Event) Update(newName, newDesc string) error {
 		return err
 	}
 
-	_, err := pgStorage.Exec(
+	_, err := pgStorage.ExecContext(
+		ctx,
 		"UPDATE events SET name = $1, description = $2 WHERE id = $3",
 		e.Name, e.Description, e.Id,
 	)
@@ -64,8 +69,8 @@ func (e *Event) Update(newName, newDesc string) error {
 	return nil
 }
 
-func (e *Event) Delete() error {
-	_, err := pgStorage.Exec("DELETE FROM events WHERE id = $1", e.Id)
+func (e *Event) Delete(ctx context.Context) error {
+	_, err := pgStorage.ExecContext(ctx, "DELETE FROM events WHERE id = $1", e.Id)
 	if err != nil {
 		return err
 	}

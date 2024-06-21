@@ -11,10 +11,10 @@ import (
 	"hwCalendar/storage"
 )
 
-func Handle(_ context.Context, req *eventpb.EventByIdRequest) (*eventpb.EventByIdResponse, error) {
+func Handle(ctx context.Context, req *eventpb.EventByIdRequest) (*eventpb.EventByIdResponse, error) {
 	id := int(req.Id)
 
-	e, err := event.ById(id)
+	e, err := event.ById(ctx, id)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -36,6 +36,9 @@ func resFromEvent(e *event.Event) *eventpb.EventByIdResponse {
 func handleError(err error) error {
 	if errors.Is(err, storage.ErrNotFound) {
 		return status.Error(codes.NotFound, err.Error())
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return status.Error(codes.DeadlineExceeded, err.Error())
 	}
 
 	return status.Error(codes.Internal, err.Error())

@@ -10,14 +10,14 @@ import (
 	"hwCalendar/storage"
 )
 
-func Handle(_ context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventResponse, error) {
+func Handle(ctx context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventResponse, error) {
 	newEvent := event.New(
 		req.Name,
 		req.Description,
 		req.Timestamp.AsTime(),
 	)
 
-	id, err := newEvent.Add()
+	id, err := newEvent.Add(ctx)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -38,6 +38,9 @@ func handleError(err error) error {
 	}
 	if errors.Is(err, storage.ErrNotFound) {
 		return status.Error(codes.NotFound, err.Error())
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return status.Error(codes.DeadlineExceeded, err.Error())
 	}
 
 	return status.Errorf(codes.Internal, "add event failed: %v", err)

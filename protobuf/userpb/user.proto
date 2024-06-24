@@ -49,7 +49,6 @@ message AllUsersResponse {
 message User {
   int32 id = 1;
   string username = 2;
-  string password = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
 }

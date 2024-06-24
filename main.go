@@ -17,5 +17,6 @@ func main() {
 	if err := migrator.Up("migrations"); err != nil {
 		log.Panicf("failed to get up migrations: %v", err)
 	}
-	grpc.InitGrpc()
+	go grpc.InitEventServer()
+	grpc.InitUserServer()
 }

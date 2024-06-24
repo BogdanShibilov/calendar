@@ -3,10 +3,7 @@ package grpc
 import (
 	"context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"hwCalendar/protobuf/eventpb"
 	"hwCalendar/server/grpc/handler/event/add"
@@ -16,20 +13,19 @@ import (
 	"hwCalendar/server/grpc/handler/event/update"
 	"log"
 	"net"
-	"strings"
 )
 
 type Server struct {
 	*eventpb.UnimplementedEventServiceServer
 }
 
-func InitGrpc() {
+func InitEventServer() {
 	ln, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(onlyLocalhostInterceptor))
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(onlyLocalhost))
 	reflection.Register(grpcServer)
 	eventpb.RegisterEventServiceServer(grpcServer, &Server{})
 	_ = grpcServer.Serve(ln)
@@ -53,19 +49,4 @@ func (s *Server) EventById(ctx context.Context, req *eventpb.EventByIdRequest) (
 
 func (s *Server) AllEvents(ctx context.Context, req *emptypb.Empty) (*eventpb.AllEventsResponse, error) {
 	return all.Handle(ctx, req)
-}
-
-const localhost = "127.0.0.1"
-
-func onlyLocalhostInterceptor(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-	p, ok := peer.FromContext(ctx)
-	if !ok {
-		return nil, status.Errorf(codes.PermissionDenied, "invalid peer")
-	}
-	peerIpAddr, _, _ := strings.Cut(p.Addr.String(), ":")
-	if peerIpAddr != localhost {
-		return nil, status.Errorf(codes.PermissionDenied, "invalid peer")
-	}
-
-	return handler(ctx, req)
 }

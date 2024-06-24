@@ -25,14 +25,20 @@ func New(username, pass string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	now := time.Now()
 
-	return &User{
+	now := time.Now()
+	user := &User{
 		Username:  username,
 		PassHash:  string(passHash),
 		CreatedAt: now,
 		UpdatedAt: now,
-	}, nil
+	}
+	err = validate(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (u *User) Add(ctx context.Context) (int, error) {

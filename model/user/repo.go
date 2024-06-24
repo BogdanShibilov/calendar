@@ -7,7 +7,7 @@ import (
 	"hwCalendar/storage"
 )
 
-func ById(ctx context.Context, id int64) (*User, error) {
+func ById(ctx context.Context, id int) (*User, error) {
 	var user User
 	err := pgStorage.GetContext(ctx, &user, "SELECT id, username, password_hash, created_at, updated_at FROM users WHERE id = $1", id)
 	if err != nil {

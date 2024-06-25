@@ -8,11 +8,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"hwCalendar/proto/userpb"
-	user2 "hwCalendar/user/model/user"
+	"hwCalendar/user/model/user"
 )
 
 func Handle(ctx context.Context, _ *emptypb.Empty) (*userpb.AllUsersResponse, error) {
-	all, err := user2.All(ctx)
+	all, err := user.All(ctx)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Errorf(codes.DeadlineExceeded, err.Error())
@@ -24,7 +24,7 @@ func Handle(ctx context.Context, _ *emptypb.Empty) (*userpb.AllUsersResponse, er
 	return resFromUsers(all), nil
 }
 
-func resFromUsers(allUsers []user2.User) *userpb.AllUsersResponse {
+func resFromUsers(allUsers []user.User) *userpb.AllUsersResponse {
 	userPbSlice := make([]*userpb.User, 0, len(allUsers))
 	for _, u := range allUsers {
 		userPbSlice = append(userPbSlice, &userpb.User{

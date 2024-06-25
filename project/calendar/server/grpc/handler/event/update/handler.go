@@ -7,11 +7,17 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"hwCalendar/calendar/model/event"
+	"hwCalendar/calendar/server/grpc/handler/event/common"
 	"hwCalendar/calendar/storage"
 	"hwCalendar/proto/eventpb"
 )
 
 func Handle(ctx context.Context, req *eventpb.UpdateEventRequest) (*emptypb.Empty, error) {
+	err := validate(req)
+	if err != nil {
+		return nil, err
+	}
+
 	id := int(req.Id)
 	e, err := event.ById(ctx, id)
 	if err != nil {
@@ -26,14 +32,20 @@ func Handle(ctx context.Context, req *eventpb.UpdateEventRequest) (*emptypb.Empt
 	return &emptypb.Empty{}, nil
 }
 
+func validate(req *eventpb.UpdateEventRequest) error {
+	if req.Name == "" {
+		return status.Error(codes.InvalidArgument, common.ErrEmptyName.Error())
+	}
+	if req.Description == "" {
+		return status.Error(codes.InvalidArgument, common.ErrEmptyDescription.Error())
+	}
+
+	return nil
+}
+
 func handleError(err error) error {
 	if errors.Is(err, storage.ErrNotFound) {
 		return status.Error(codes.NotFound, err.Error())
-	}
-	if errors.Is(err, event.ErrInvalidId) ||
-		errors.Is(err, event.ErrEmptyName) ||
-		errors.Is(err, event.ErrEmptyDescription) {
-		return status.Error(codes.InvalidArgument, err.Error())
 	}
 	if errors.Is(err, context.DeadlineExceeded) {
 		return status.Error(codes.DeadlineExceeded, err.Error())

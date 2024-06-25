@@ -27,10 +27,6 @@ func New(name string, desc string, timestamp time.Time) *Event {
 }
 
 func (e *Event) Add(ctx context.Context) (int, error) {
-	if err := validate(e); err != nil {
-		return -1, err
-	}
-
 	var insertedId int
 	err := pgStorage.QueryRowxContext(
 		ctx,
@@ -38,7 +34,7 @@ func (e *Event) Add(ctx context.Context) (int, error) {
 		e.Name, e.Description, e.Timestamp,
 	).Scan(&insertedId)
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	e.Id = insertedId
@@ -49,10 +45,6 @@ func (e *Event) Add(ctx context.Context) (int, error) {
 func (e *Event) Update(ctx context.Context, newName, newDesc string) error {
 	e.Name = newName
 	e.Description = newDesc
-
-	if err := validate(e); err != nil {
-		return err
-	}
 
 	_, err := pgStorage.NamedExecContext(
 		ctx,
@@ -75,18 +67,5 @@ func (e *Event) Delete(ctx context.Context) error {
 		return err
 	}
 
-	return nil
-}
-
-func validate(event *Event) error {
-	if event.Name == "" {
-		return ErrEmptyName
-	}
-	if event.Description == "" {
-		return ErrEmptyDescription
-	}
-	if event.Id < 0 {
-		return ErrInvalidId
-	}
 	return nil
 }

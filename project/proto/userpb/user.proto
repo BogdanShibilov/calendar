@@ -12,7 +12,9 @@ service UserService {
   rpc UpdateUser (UpdateUserRequest) returns (google.protobuf.Empty);
   rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
   rpc UserById (UserByIdRequest) returns (UserByIdResponse);
+  rpc UserByUsername (UserByUsernameRequest) returns (UserByUsernameResponse);
   rpc AllUsers (google.protobuf.Empty) returns (AllUsersResponse);
+  rpc CheckCredentials (CheckCredentialsRequest) returns (CheckCredentialsResponse);
 }
 
 message AddUserRequest {
@@ -42,13 +44,31 @@ message UserByIdResponse {
   User user = 1;
 }
 
+message UserByUsernameRequest {
+  string username = 1;
+}
+
+message UserByUsernameResponse {
+  User user = 1;
+}
+
 message AllUsersResponse {
   repeated User users = 1;
+}
+
+message CheckCredentialsRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message CheckCredentialsResponse {
+  User user = 1;
 }
 
 message User {
   int32 id = 1;
   string username = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
+  string pass_hash = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
 }

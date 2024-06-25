@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package jwt;
+
+option go_package = "/jwtpb";
+
+import "google/protobuf/empty.proto";
+
+service JwtService {
+  rpc GenerateTokens (GenerateTokensRequest) returns (GenerateTokensResponse);
+  rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
+  rpc RemovePair (RemovePairRequest) returns (google.protobuf.Empty);
+  rpc IsValidAccessToken (IsValidAccessTokenRequest) returns (google.protobuf.Empty);
+}
+
+message GenerateTokensRequest {
+  int32 id = 1;
+  string username = 2;
+}
+
+message GenerateTokensResponse {
+  TokenPair pair = 1;
+}
+
+message RefreshTokensRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokensResponse {
+  TokenPair pair = 1;
+}
+
+message RemovePairRequest {
+  string RefreshToken = 1;
+}
+
+message IsValidAccessTokenRequest {
+  string AccessToken = 1;
+}
+
+message TokenPair {
+  string access_token = 1;
+  string refresh_token = 2;
+}

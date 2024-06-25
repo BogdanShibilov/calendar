@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 	"hwCalendar/user/storage"
 	"hwCalendar/user/storage/postgres"
@@ -33,19 +34,11 @@ func New(username, pass string) (*User, error) {
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
-	err = validate(user)
-	if err != nil {
-		return nil, err
-	}
 
 	return user, nil
 }
 
 func (u *User) Add(ctx context.Context) (int, error) {
-	if err := validate(u); err != nil {
-		return -1, err
-	}
-
 	var insertedid int
 	err := pgStorage.QueryRowxContext(
 		ctx,
@@ -53,7 +46,7 @@ func (u *User) Add(ctx context.Context) (int, error) {
 		u.Username, u.PassHash, u.CreatedAt, u.UpdatedAt,
 	).Scan(&insertedid)
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	u.Id = insertedid
@@ -69,11 +62,6 @@ func (u *User) Update(ctx context.Context, newUsername, newPass string) error {
 
 	u.Username = newUsername
 	u.PassHash = string(newPassHash)
-
-	err = validate(u)
-	if err != nil {
-		return err
-	}
 
 	u.UpdatedAt = time.Now()
 	_, err = pgStorage.NamedExecContext(
@@ -91,6 +79,49 @@ func (u *User) Update(ctx context.Context, newUsername, newPass string) error {
 	return nil
 }
 
+func (u *User) UpdateUsername(ctx context.Context, tx *sqlx.Tx, newUsername string) error {
+	if u.Username == newUsername {
+		return nil
+	}
+
+	u.Username = newUsername
+	u.UpdatedAt = time.Now()
+	_, err := tx.NamedExecContext(
+		ctx,
+		"UPDATE users SET username = :username, updated_at = :updated_at WHERE id = :id",
+		u,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *User) UpdatePassword(ctx context.Context, tx *sqlx.Tx, newPassword string) error {
+	newPassHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if u.PassHash == string(newPassHash) {
+		return nil
+	}
+
+	u.PassHash = string(newPassHash)
+	u.UpdatedAt = time.Now()
+	_, err = tx.NamedExecContext(
+		ctx,
+		"UPDATE users SET password_hash = :password_hash, updated_at = :updated_at WHERE id = :id",
+		u,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *User) Delete(ctx context.Context) error {
 	_, err := pgStorage.NamedExecContext(ctx, "DELETE FROM users WHERE id = :id", u)
 	if err != nil {
@@ -100,12 +131,11 @@ func (u *User) Delete(ctx context.Context) error {
 	return nil
 }
 
-func validate(user *User) error {
-	if user.Username == "" {
-		return ErrEmptyUsername
+func (u *User) VerifyPassword(password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(u.PassHash), []byte(password))
+	if err != nil {
+		return ErrInvalidPassword
 	}
-	if user.PassHash == "" {
-		return ErrEmptyPassword
-	}
+
 	return nil
 }

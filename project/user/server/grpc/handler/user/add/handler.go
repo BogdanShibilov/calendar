@@ -7,10 +7,16 @@ import (
 	"google.golang.org/grpc/status"
 	"hwCalendar/proto/userpb"
 	"hwCalendar/user/model/user"
+	"hwCalendar/user/server/grpc/handler/user/common"
 	"hwCalendar/user/storage"
 )
 
 func Handle(ctx context.Context, req *userpb.AddUserRequest) (*userpb.AddUserResponse, error) {
+	err := validate(req)
+	if err != nil {
+		return nil, err
+	}
+
 	newUser, err := user.New(
 		req.Username,
 		req.Password,
@@ -29,11 +35,17 @@ func Handle(ctx context.Context, req *userpb.AddUserRequest) (*userpb.AddUserRes
 	}, nil
 }
 
-func handleError(err error) error {
-	if errors.Is(err, user.ErrEmptyUsername) ||
-		errors.Is(err, user.ErrEmptyPassword) {
-		return status.Error(codes.InvalidArgument, err.Error())
+func validate(req *userpb.AddUserRequest) error {
+	if req.Username == "" {
+		return status.Error(codes.InvalidArgument, common.ErrMissingUsername.Error())
 	}
+	if req.Password == "" {
+		return status.Error(codes.InvalidArgument, common.ErrMissingPassword.Error())
+	}
+	return nil
+}
+
+func handleError(err error) error {
 	if errors.Is(err, storage.ErrAlreadyExists) {
 		return status.Error(codes.AlreadyExists, err.Error())
 	}

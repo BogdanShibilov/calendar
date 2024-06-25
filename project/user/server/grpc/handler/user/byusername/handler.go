@@ -1,4 +1,4 @@
-package byid
+package byusername
 
 import (
 	"context"
@@ -6,15 +6,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"hwCalendar/calendar/storage"
 	"hwCalendar/proto/userpb"
 	"hwCalendar/user/model/user"
+	"hwCalendar/user/storage"
 )
 
-func Handle(ctx context.Context, req *userpb.UserByIdRequest) (*userpb.UserByIdResponse, error) {
-	id := int(req.Id)
-
-	u, err := user.ById(ctx, id)
+func Handle(ctx context.Context, req *userpb.UserByUsernameRequest) (*userpb.UserByUsernameResponse, error) {
+	u, err := user.ByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -22,8 +20,8 @@ func Handle(ctx context.Context, req *userpb.UserByIdRequest) (*userpb.UserByIdR
 	return resFromUser(u), nil
 }
 
-func resFromUser(u *user.User) *userpb.UserByIdResponse {
-	return &userpb.UserByIdResponse{
+func resFromUser(u *user.User) *userpb.UserByUsernameResponse {
+	return &userpb.UserByUsernameResponse{
 		User: &userpb.User{
 			Id:        int32(u.Id),
 			Username:  u.Username,

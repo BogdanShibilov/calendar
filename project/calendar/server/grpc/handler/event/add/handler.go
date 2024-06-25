@@ -6,11 +6,17 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"hwCalendar/calendar/model/event"
+	"hwCalendar/calendar/server/grpc/handler/event/common"
 	"hwCalendar/calendar/storage"
 	"hwCalendar/proto/eventpb"
 )
 
 func Handle(ctx context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEventResponse, error) {
+	err := validate(req)
+	if err != nil {
+		return nil, err
+	}
+
 	newEvent := event.New(
 		req.Name,
 		req.Description,
@@ -27,12 +33,18 @@ func Handle(ctx context.Context, req *eventpb.AddEventRequest) (*eventpb.AddEven
 	}, nil
 }
 
-func handleError(err error) error {
-	if errors.Is(err, event.ErrInvalidId) ||
-		errors.Is(err, event.ErrEmptyName) ||
-		errors.Is(err, event.ErrEmptyDescription) {
-		return status.Error(codes.InvalidArgument, err.Error())
+func validate(req *eventpb.AddEventRequest) error {
+	if req.Name == "" {
+		return status.Error(codes.InvalidArgument, common.ErrEmptyName.Error())
 	}
+	if req.Description == "" {
+		return status.Error(codes.InvalidArgument, common.ErrEmptyDescription.Error())
+	}
+
+	return nil
+}
+
+func handleError(err error) error {
 	if errors.Is(err, storage.ErrAlreadyExists) {
 		return status.Error(codes.AlreadyExists, err.Error())
 	}

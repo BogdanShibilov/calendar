@@ -27,7 +27,9 @@ type UserServiceClient interface {
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UserById(ctx context.Context, in *UserByIdRequest, opts ...grpc.CallOption) (*UserByIdResponse, error)
+	UserByUsername(ctx context.Context, in *UserByUsernameRequest, opts ...grpc.CallOption) (*UserByUsernameResponse, error)
 	AllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllUsersResponse, error)
+	CheckCredentials(ctx context.Context, in *CheckCredentialsRequest, opts ...grpc.CallOption) (*CheckCredentialsResponse, error)
 }
 
 type userServiceClient struct {
@@ -74,9 +76,27 @@ func (c *userServiceClient) UserById(ctx context.Context, in *UserByIdRequest, o
 	return out, nil
 }
 
+func (c *userServiceClient) UserByUsername(ctx context.Context, in *UserByUsernameRequest, opts ...grpc.CallOption) (*UserByUsernameResponse, error) {
+	out := new(UserByUsernameResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/UserByUsername", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) AllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllUsersResponse, error) {
 	out := new(AllUsersResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/AllUsers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) CheckCredentials(ctx context.Context, in *CheckCredentialsRequest, opts ...grpc.CallOption) (*CheckCredentialsResponse, error) {
+	out := new(CheckCredentialsResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/CheckCredentials", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +111,9 @@ type UserServiceServer interface {
 	UpdateUser(context.Context, *UpdateUserRequest) (*emptypb.Empty, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	UserById(context.Context, *UserByIdRequest) (*UserByIdResponse, error)
+	UserByUsername(context.Context, *UserByUsernameRequest) (*UserByUsernameResponse, error)
 	AllUsers(context.Context, *emptypb.Empty) (*AllUsersResponse, error)
+	CheckCredentials(context.Context, *CheckCredentialsRequest) (*CheckCredentialsResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -111,8 +133,14 @@ func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserReq
 func (UnimplementedUserServiceServer) UserById(context.Context, *UserByIdRequest) (*UserByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserById not implemented")
 }
+func (UnimplementedUserServiceServer) UserByUsername(context.Context, *UserByUsernameRequest) (*UserByUsernameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserByUsername not implemented")
+}
 func (UnimplementedUserServiceServer) AllUsers(context.Context, *emptypb.Empty) (*AllUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AllUsers not implemented")
+}
+func (UnimplementedUserServiceServer) CheckCredentials(context.Context, *CheckCredentialsRequest) (*CheckCredentialsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckCredentials not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -199,6 +227,24 @@ func _UserService_UserById_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UserByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserByUsernameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UserByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/UserByUsername",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UserByUsername(ctx, req.(*UserByUsernameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_AllUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -213,6 +259,24 @@ func _UserService_AllUsers_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).AllUsers(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_CheckCredentials_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckCredentialsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CheckCredentials(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/CheckCredentials",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CheckCredentials(ctx, req.(*CheckCredentialsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -241,8 +305,16 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_UserById_Handler,
 		},
 		{
+			MethodName: "UserByUsername",
+			Handler:    _UserService_UserByUsername_Handler,
+		},
+		{
 			MethodName: "AllUsers",
 			Handler:    _UserService_AllUsers_Handler,
+		},
+		{
+			MethodName: "CheckCredentials",
+			Handler:    _UserService_CheckCredentials_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

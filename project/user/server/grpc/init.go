@@ -9,6 +9,8 @@ import (
 	"hwCalendar/user/server/grpc/handler/user/add"
 	"hwCalendar/user/server/grpc/handler/user/all"
 	"hwCalendar/user/server/grpc/handler/user/byid"
+	"hwCalendar/user/server/grpc/handler/user/byusername"
+	"hwCalendar/user/server/grpc/handler/user/checkCreds"
 	"hwCalendar/user/server/grpc/handler/user/deleteUser"
 	"hwCalendar/user/server/grpc/handler/user/update"
 	"log"
@@ -47,6 +49,14 @@ func (u UserGprc) UserById(ctx context.Context, request *userpb.UserByIdRequest)
 	return byid.Handle(ctx, request)
 }
 
+func (u UserGprc) UserByUsername(ctx context.Context, request *userpb.UserByUsernameRequest) (*userpb.UserByUsernameResponse, error) {
+	return byusername.Handle(ctx, request)
+}
+
 func (u UserGprc) AllUsers(ctx context.Context, empty *emptypb.Empty) (*userpb.AllUsersResponse, error) {
 	return all.Handle(ctx, empty)
+}
+
+func (u UserGprc) CheckCredentials(ctx context.Context, request *userpb.CheckCredentialsRequest) (*userpb.CheckCredentialsResponse, error) {
+	return checkCreds.Handle(ctx, request)
 }

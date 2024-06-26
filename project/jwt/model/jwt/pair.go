@@ -25,7 +25,7 @@ func GeneratePair(ctx context.Context, id int, username string) (*TokenPair, err
 	}, nil
 }
 
-func RemovePair(ctx context.Context, id int) {
-	RemoveAccessToken(ctx, id)
-	RemoveRefreshToken(ctx, id)
+func RemoveAllTokensFor(ctx context.Context, userId int) {
+	RemoveAllAccessTokensFor(ctx, userId)
+	RemoveAllRefreshTokensFor(ctx, userId)
 }

@@ -25,7 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type JwtServiceClient interface {
 	GenerateTokens(ctx context.Context, in *GenerateTokensRequest, opts ...grpc.CallOption) (*GenerateTokensResponse, error)
 	RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error)
-	RemovePair(ctx context.Context, in *RemovePairRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RemoveAllTokensForUser(ctx context.Context, in *RemoveAllTokensForUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	IsValidAccessToken(ctx context.Context, in *IsValidAccessTokenRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -55,9 +55,9 @@ func (c *jwtServiceClient) RefreshTokens(ctx context.Context, in *RefreshTokensR
 	return out, nil
 }
 
-func (c *jwtServiceClient) RemovePair(ctx context.Context, in *RemovePairRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *jwtServiceClient) RemoveAllTokensForUser(ctx context.Context, in *RemoveAllTokensForUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/jwt.JwtService/RemovePair", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/jwt.JwtService/RemoveAllTokensForUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (c *jwtServiceClient) IsValidAccessToken(ctx context.Context, in *IsValidAc
 type JwtServiceServer interface {
 	GenerateTokens(context.Context, *GenerateTokensRequest) (*GenerateTokensResponse, error)
 	RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error)
-	RemovePair(context.Context, *RemovePairRequest) (*emptypb.Empty, error)
+	RemoveAllTokensForUser(context.Context, *RemoveAllTokensForUserRequest) (*emptypb.Empty, error)
 	IsValidAccessToken(context.Context, *IsValidAccessTokenRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedJwtServiceServer()
 }
@@ -94,8 +94,8 @@ func (UnimplementedJwtServiceServer) GenerateTokens(context.Context, *GenerateTo
 func (UnimplementedJwtServiceServer) RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshTokens not implemented")
 }
-func (UnimplementedJwtServiceServer) RemovePair(context.Context, *RemovePairRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemovePair not implemented")
+func (UnimplementedJwtServiceServer) RemoveAllTokensForUser(context.Context, *RemoveAllTokensForUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAllTokensForUser not implemented")
 }
 func (UnimplementedJwtServiceServer) IsValidAccessToken(context.Context, *IsValidAccessTokenRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsValidAccessToken not implemented")
@@ -149,20 +149,20 @@ func _JwtService_RefreshTokens_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JwtService_RemovePair_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemovePairRequest)
+func _JwtService_RemoveAllTokensForUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAllTokensForUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JwtServiceServer).RemovePair(ctx, in)
+		return srv.(JwtServiceServer).RemoveAllTokensForUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/jwt.JwtService/RemovePair",
+		FullMethod: "/jwt.JwtService/RemoveAllTokensForUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JwtServiceServer).RemovePair(ctx, req.(*RemovePairRequest))
+		return srv.(JwtServiceServer).RemoveAllTokensForUser(ctx, req.(*RemoveAllTokensForUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -201,8 +201,8 @@ var JwtService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _JwtService_RefreshTokens_Handler,
 		},
 		{
-			MethodName: "RemovePair",
-			Handler:    _JwtService_RemovePair_Handler,
+			MethodName: "RemoveAllTokensForUser",
+			Handler:    _JwtService_RemoveAllTokensForUser_Handler,
 		},
 		{
 			MethodName: "IsValidAccessToken",

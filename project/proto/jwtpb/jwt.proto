@@ -9,12 +9,12 @@ import "google/protobuf/empty.proto";
 service JwtService {
   rpc GenerateTokens (GenerateTokensRequest) returns (GenerateTokensResponse);
   rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
-  rpc RemovePair (RemovePairRequest) returns (google.protobuf.Empty);
+  rpc RemoveAllTokensForUser (RemoveAllTokensForUserRequest) returns (google.protobuf.Empty);
   rpc IsValidAccessToken (IsValidAccessTokenRequest) returns (google.protobuf.Empty);
 }
 
 message GenerateTokensRequest {
-  int32 id = 1;
+  int32 user_id = 1;
   string username = 2;
 }
 
@@ -24,14 +24,15 @@ message GenerateTokensResponse {
 
 message RefreshTokensRequest {
   string refresh_token = 1;
+  string username = 2;
 }
 
 message RefreshTokensResponse {
   TokenPair pair = 1;
 }
 
-message RemovePairRequest {
-  string RefreshToken = 1;
+message RemoveAllTokensForUserRequest {
+  string AccessToken = 1;
 }
 
 message IsValidAccessTokenRequest {

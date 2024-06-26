@@ -4,21 +4,22 @@ import (
 	"context"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"hwCalendar/jwt/config"
 	"hwCalendar/jwt/storage/redis"
-	"os"
 	"strconv"
 	"time"
 )
 
 var (
-	secret    = []byte(os.Getenv("SECRET"))
-	accessTTL = os.Getenv("ACCESS_TTL")
+	secret    = []byte(config.Get().Secret)
+	accessTTL = config.Get().AccessTTL
 )
 
 var accessDb = redis.GetDb(redis.AccessTokenDb)
 
 type AccessTokenClaims struct {
-	Id       int    `json:"id"`
+	UserId   int    `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
@@ -28,9 +29,10 @@ func NewAccessTokenClaims(id int, username string) *AccessTokenClaims {
 	ttl, _ := time.ParseDuration(accessTTL)
 
 	return &AccessTokenClaims{
-		Id:       id,
+		UserId:   id,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.New().String(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
@@ -44,24 +46,29 @@ func (c *AccessTokenClaims) GenerateToken(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	idString := strconv.Itoa(c.Id)
+	key := strconv.Itoa(c.UserId) + ":" + c.ID
 	expiresIn := c.ExpiresAt.Sub(time.Now())
-	accessDb.Set(ctx, idString, tokenString, expiresIn)
+	accessDb.Set(ctx, key, tokenString, expiresIn)
 
 	return tokenString, nil
 }
 
-func IsAccessTokenInRedis(ctx context.Context, id int, givenToken string) bool {
-	idString := strconv.Itoa(id)
-	tokenString := accessDb.Get(ctx, idString).Val()
+func IsAccessTokenInRedis(ctx context.Context, userId int, tokenId, givenToken string) bool {
+	key := strconv.Itoa(userId) + ":" + tokenId
+	tokenString := accessDb.Get(ctx, key).Val()
 	if tokenString != givenToken {
 		return false
 	}
 	return true
 }
 
-func RemoveAccessToken(ctx context.Context, id int) {
-	_ = accessDb.Del(ctx, strconv.Itoa(id))
+func RemoveAllAccessTokensFor(ctx context.Context, userId int) {
+	keyPattern := strconv.Itoa(userId) + ":" + "*"
+	keys := accessDb.Keys(ctx, keyPattern).Val()
+
+	for _, k := range keys {
+		_ = accessDb.Del(ctx, k)
+	}
 }
 
 func ParseAccessToken(tokenString string) (*AccessTokenClaims, error) {

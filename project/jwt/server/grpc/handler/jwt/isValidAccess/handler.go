@@ -16,7 +16,7 @@ func Handle(ctx context.Context, req *jwtpb.IsValidAccessTokenRequest) (*emptypb
 		return nil, handleError(err)
 	}
 
-	if !jwt.IsAccessTokenInRedis(ctx, claims.Id, req.AccessToken) {
+	if !jwt.IsAccessTokenInRedis(ctx, claims.UserId, claims.ID, req.AccessToken) {
 		return nil, status.Error(codes.Unauthenticated, jwt.ErrNoSuchTokenForUser.Error())
 	}
 

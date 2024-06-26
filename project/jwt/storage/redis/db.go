@@ -2,7 +2,7 @@ package redis
 
 import (
 	"github.com/redis/go-redis/v9"
-	"os"
+	"hwCalendar/jwt/config"
 	"sync"
 )
 
@@ -21,10 +21,8 @@ var (
 )
 
 func createRedisClient(db db) *redis.Client {
-	addr := os.Getenv("REDIS_ADDR")
-
 	return redis.NewClient(&redis.Options{
-		Addr:     addr,
+		Addr:     config.Get().RedisAddr,
 		Password: "",
 		DB:       int(db),
 	})

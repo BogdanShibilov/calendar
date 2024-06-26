@@ -1,4 +1,4 @@
-package removePair
+package removeAllTokens
 
 import (
 	"context"
@@ -11,18 +11,18 @@ import (
 	"hwCalendar/proto/jwtpb"
 )
 
-func Handle(ctx context.Context, req *jwtpb.RemovePairRequest) (*emptypb.Empty, error) {
+func Handle(ctx context.Context, req *jwtpb.RemoveAllTokensForUserRequest) (*emptypb.Empty, error) {
 	err := validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, err := jwt.ParseRefreshToken(req.RefreshToken)
+	claims, err := jwt.ParseAccessToken(req.AccessToken)
 	if err != nil {
 		return nil, handleError(err)
 	}
 
-	jwt.RemovePair(ctx, claims.Id)
+	jwt.RemoveAllTokensFor(ctx, claims.UserId)
 
 	return &emptypb.Empty{}, nil
 }
@@ -40,8 +40,8 @@ func handleError(err error) error {
 	return status.Error(codes.Internal, err.Error())
 }
 
-func validate(req *jwtpb.RemovePairRequest) error {
-	if req.RefreshToken == "" {
+func validate(req *jwtpb.RemoveAllTokensForUserRequest) error {
+	if req.AccessToken == "" {
 		return status.Error(codes.InvalidArgument, common.ErrMissingTokenString.Error())
 	}
 

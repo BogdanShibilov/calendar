@@ -7,9 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 	"hwCalendar/jwt/model/jwt"
 	"hwCalendar/jwt/server/grpc/handler/jwt/common"
-	"hwCalendar/jwt/transport/grpc/user"
 	"hwCalendar/proto/jwtpb"
-	"hwCalendar/proto/userpb"
 )
 
 func Handle(ctx context.Context, req *jwtpb.RefreshTokensRequest) (*jwtpb.RefreshTokensResponse, error) {
@@ -23,16 +21,11 @@ func Handle(ctx context.Context, req *jwtpb.RefreshTokensRequest) (*jwtpb.Refres
 		return nil, handleError(err)
 	}
 
-	if !jwt.IsRefreshTokenInRedis(ctx, claims.Id, req.RefreshToken) {
+	if !jwt.IsRefreshTokenInRedis(ctx, claims.UserId, claims.ID, req.RefreshToken) {
 		return nil, status.Error(codes.Unauthenticated, jwt.ErrNoSuchTokenForUser.Error())
 	}
 
-	res, err := user.GetClient().UserById(ctx, &userpb.UserByIdRequest{Id: int32(claims.Id)})
-	if err != nil {
-		return nil, handleError(err)
-	}
-
-	tokenPair, err := jwt.GeneratePair(ctx, int(res.User.Id), res.User.Username)
+	tokenPair, err := jwt.GeneratePair(ctx, claims.UserId, req.Username)
 	if err != nil {
 		return nil, handleError(err)
 	}

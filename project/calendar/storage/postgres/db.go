@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"github.com/jmoiron/sqlx"
+	"hwCalendar/calendar/config"
 	"log"
-	"os"
 	"sync"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -20,7 +20,7 @@ type DB struct {
 
 func GetDb() *DB {
 	once.Do(func() {
-		dsn := os.Getenv("DATABASE_URL")
+		dsn := config.Get().DatabaseUrl
 
 		db, err := sqlx.Connect("pgx", dsn)
 		if err != nil {

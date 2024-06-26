@@ -16,7 +16,7 @@ func Handle(ctx context.Context, req *jwtpb.GenerateTokensRequest) (*jwtpb.Gener
 		return nil, err
 	}
 
-	tokenPair, err := jwt.GeneratePair(ctx, int(req.Id), req.Username)
+	tokenPair, err := jwt.GeneratePair(ctx, int(req.UserId), req.Username)
 	if err != nil {
 		return nil, handleError(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"hwCalendar/jwt/server/grpc/handler/jwt/generate"
 	"hwCalendar/jwt/server/grpc/handler/jwt/isValidAccess"
 	"hwCalendar/jwt/server/grpc/handler/jwt/refresh"
-	"hwCalendar/jwt/server/grpc/handler/jwt/removePair"
+	"hwCalendar/jwt/server/grpc/handler/jwt/removeAllTokens"
 	"hwCalendar/proto/jwtpb"
 	"log"
 	"net"
@@ -38,8 +38,8 @@ func (s Server) RefreshTokens(ctx context.Context, request *jwtpb.RefreshTokensR
 	return refresh.Handle(ctx, request)
 }
 
-func (s Server) RemovePair(ctx context.Context, request *jwtpb.RemovePairRequest) (*emptypb.Empty, error) {
-	return removePair.Handle(ctx, request)
+func (s Server) RemoveAllTokensForUser(ctx context.Context, request *jwtpb.RemoveAllTokensForUserRequest) (*emptypb.Empty, error) {
+	return removeAllTokens.Handle(ctx, request)
 }
 
 func (s Server) IsValidAccessToken(ctx context.Context, request *jwtpb.IsValidAccessTokenRequest) (*emptypb.Empty, error) {

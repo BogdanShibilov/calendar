@@ -4,18 +4,19 @@ import (
 	"context"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"hwCalendar/jwt/config"
 	"hwCalendar/jwt/storage/redis"
-	"os"
 	"strconv"
 	"time"
 )
 
-var refreshTTL = os.Getenv("REFRESH_TTL")
+var refreshTTL = config.Get().RefreshTTL
 
 var refreshDb = redis.GetDb(redis.RefreshTokenDb)
 
 type RefreshTokenClaims struct {
-	Id int `json:"id"`
+	UserId int `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -24,8 +25,9 @@ func NewRefreshTokenClaims(id int) *RefreshTokenClaims {
 	ttl, _ := time.ParseDuration(refreshTTL)
 
 	return &RefreshTokenClaims{
-		Id: id,
+		UserId: id,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.New().String(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
@@ -39,24 +41,29 @@ func (c *RefreshTokenClaims) GenerateToken(ctx context.Context) (string, error) 
 		return "", err
 	}
 
-	idString := strconv.Itoa(c.Id)
+	key := strconv.Itoa(c.UserId) + ":" + c.ID
 	expiresIn := c.ExpiresAt.Sub(time.Now())
-	refreshDb.Set(ctx, idString, tokenString, expiresIn)
+	refreshDb.Set(ctx, key, tokenString, expiresIn)
 
 	return tokenString, nil
 }
 
-func IsRefreshTokenInRedis(ctx context.Context, id int, givenToken string) bool {
-	idString := strconv.Itoa(id)
-	tokenString := refreshDb.Get(ctx, idString).Val()
+func IsRefreshTokenInRedis(ctx context.Context, userId int, tokenId, givenToken string) bool {
+	key := strconv.Itoa(userId) + ":" + tokenId
+	tokenString := refreshDb.Get(ctx, key).Val()
 	if tokenString != givenToken {
 		return false
 	}
 	return true
 }
 
-func RemoveRefreshToken(ctx context.Context, id int) {
-	_ = refreshDb.Del(ctx, strconv.Itoa(id))
+func RemoveAllRefreshTokensFor(ctx context.Context, userId int) {
+	keyPattern := strconv.Itoa(userId) + ":" + "*"
+	keys := refreshDb.Keys(ctx, keyPattern).Val()
+
+	for _, k := range keys {
+		_ = refreshDb.Del(ctx, k)
+	}
 }
 
 func ParseRefreshToken(tokenString string) (*RefreshTokenClaims, error) {

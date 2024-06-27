@@ -12,7 +12,7 @@ service EventService {
   rpc UpdateEvent (UpdateEventRequest) returns (google.protobuf.Empty);
   rpc DeleteEvent (DeleteEventRequest) returns (google.protobuf.Empty);
   rpc EventById (EventByIdRequest) returns (EventByIdResponse);
-  rpc AllEvents (google.protobuf.Empty) returns (AllEventsResponse);
+  rpc AllEvents (AllEventsRequest) returns (AllEventsResponse);
 }
 
 message AddEventRequest {
@@ -43,8 +43,14 @@ message EventByIdResponse {
   Event event = 1;
 }
 
+message AllEventsRequest {
+  int32 limit = 1;
+  int32 page = 2;
+}
+
 message AllEventsResponse {
   repeated Event events = 1;
+  int32 total_pages = 2;
 }
 
 message Event {

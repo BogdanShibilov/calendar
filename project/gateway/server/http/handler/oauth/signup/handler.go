@@ -49,8 +49,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
 }
 
 func validate(req *Request) error {

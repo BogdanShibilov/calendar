@@ -27,7 +27,7 @@ type EventServiceClient interface {
 	UpdateEvent(ctx context.Context, in *UpdateEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteEvent(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	EventById(ctx context.Context, in *EventByIdRequest, opts ...grpc.CallOption) (*EventByIdResponse, error)
-	AllEvents(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllEventsResponse, error)
+	AllEvents(ctx context.Context, in *AllEventsRequest, opts ...grpc.CallOption) (*AllEventsResponse, error)
 }
 
 type eventServiceClient struct {
@@ -74,7 +74,7 @@ func (c *eventServiceClient) EventById(ctx context.Context, in *EventByIdRequest
 	return out, nil
 }
 
-func (c *eventServiceClient) AllEvents(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AllEventsResponse, error) {
+func (c *eventServiceClient) AllEvents(ctx context.Context, in *AllEventsRequest, opts ...grpc.CallOption) (*AllEventsResponse, error) {
 	out := new(AllEventsResponse)
 	err := c.cc.Invoke(ctx, "/event.EventService/AllEvents", in, out, opts...)
 	if err != nil {
@@ -91,7 +91,7 @@ type EventServiceServer interface {
 	UpdateEvent(context.Context, *UpdateEventRequest) (*emptypb.Empty, error)
 	DeleteEvent(context.Context, *DeleteEventRequest) (*emptypb.Empty, error)
 	EventById(context.Context, *EventByIdRequest) (*EventByIdResponse, error)
-	AllEvents(context.Context, *emptypb.Empty) (*AllEventsResponse, error)
+	AllEvents(context.Context, *AllEventsRequest) (*AllEventsResponse, error)
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -111,7 +111,7 @@ func (UnimplementedEventServiceServer) DeleteEvent(context.Context, *DeleteEvent
 func (UnimplementedEventServiceServer) EventById(context.Context, *EventByIdRequest) (*EventByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventById not implemented")
 }
-func (UnimplementedEventServiceServer) AllEvents(context.Context, *emptypb.Empty) (*AllEventsResponse, error) {
+func (UnimplementedEventServiceServer) AllEvents(context.Context, *AllEventsRequest) (*AllEventsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AllEvents not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
@@ -200,7 +200,7 @@ func _EventService_EventById_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _EventService_AllEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(AllEventsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func _EventService_AllEvents_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/event.EventService/AllEvents",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventServiceServer).AllEvents(ctx, req.(*emptypb.Empty))
+		return srv.(EventServiceServer).AllEvents(ctx, req.(*AllEventsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

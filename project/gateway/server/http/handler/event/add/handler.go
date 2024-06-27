@@ -50,8 +50,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		handleError(w, err)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
 }
 
 func addEvent(ctx context.Context, req *Request) (*eventpb.AddEventResponse, error) {

@@ -47,6 +47,6 @@ func (s *Server) EventById(ctx context.Context, req *eventpb.EventByIdRequest) (
 	return byid.Handle(ctx, req)
 }
 
-func (s *Server) AllEvents(ctx context.Context, req *emptypb.Empty) (*eventpb.AllEventsResponse, error) {
+func (s *Server) AllEvents(ctx context.Context, req *eventpb.AllEventsRequest) (*eventpb.AllEventsResponse, error) {
 	return all.Handle(ctx, req)
 }

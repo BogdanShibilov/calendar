@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"hwCalendar/jwt/server/grpc/handler/jwt/generate"
-	"hwCalendar/jwt/server/grpc/handler/jwt/isValidAccess"
+	"hwCalendar/jwt/server/grpc/handler/jwt/parseAccess"
 	"hwCalendar/jwt/server/grpc/handler/jwt/refresh"
 	"hwCalendar/jwt/server/grpc/handler/jwt/removeAllTokens"
 	"hwCalendar/proto/jwtpb"
@@ -42,6 +42,6 @@ func (s Server) RemoveAllTokensForUser(ctx context.Context, request *jwtpb.Remov
 	return removeAllTokens.Handle(ctx, request)
 }
 
-func (s Server) IsValidAccessToken(ctx context.Context, request *jwtpb.IsValidAccessTokenRequest) (*emptypb.Empty, error) {
-	return isValidAccess.Handle(ctx, request)
+func (s Server) ParseAccessToken(ctx context.Context, request *jwtpb.ParseAccessTokenRequest) (*jwtpb.ParseAccessTokenResponse, error) {
+	return parseAccess.Handle(ctx, request)
 }

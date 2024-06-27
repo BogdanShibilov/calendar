@@ -17,6 +17,11 @@ func Handle(ctx context.Context, req *userpb.AddUserRequest) (*userpb.AddUserRes
 		return nil, err
 	}
 
+	_, err = user.ByUsername(ctx, req.Username)
+	if err == nil {
+		return nil, status.Error(codes.AlreadyExists, "user already exists")
+	}
+
 	newUser, err := user.New(
 		req.Username,
 		req.Password,

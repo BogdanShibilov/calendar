@@ -20,12 +20,12 @@ type RefreshTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-func NewRefreshTokenClaims(id int) *RefreshTokenClaims {
+func NewRefreshTokenClaims(userId int) *RefreshTokenClaims {
 	now := time.Now()
 	ttl, _ := time.ParseDuration(refreshTTL)
 
 	return &RefreshTokenClaims{
-		UserId: id,
+		UserId: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),

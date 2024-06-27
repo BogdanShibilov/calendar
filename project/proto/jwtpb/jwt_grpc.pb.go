@@ -26,7 +26,7 @@ type JwtServiceClient interface {
 	GenerateTokens(ctx context.Context, in *GenerateTokensRequest, opts ...grpc.CallOption) (*GenerateTokensResponse, error)
 	RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error)
 	RemoveAllTokensForUser(ctx context.Context, in *RemoveAllTokensForUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	IsValidAccessToken(ctx context.Context, in *IsValidAccessTokenRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ParseAccessToken(ctx context.Context, in *ParseAccessTokenRequest, opts ...grpc.CallOption) (*ParseAccessTokenResponse, error)
 }
 
 type jwtServiceClient struct {
@@ -64,9 +64,9 @@ func (c *jwtServiceClient) RemoveAllTokensForUser(ctx context.Context, in *Remov
 	return out, nil
 }
 
-func (c *jwtServiceClient) IsValidAccessToken(ctx context.Context, in *IsValidAccessTokenRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/jwt.JwtService/IsValidAccessToken", in, out, opts...)
+func (c *jwtServiceClient) ParseAccessToken(ctx context.Context, in *ParseAccessTokenRequest, opts ...grpc.CallOption) (*ParseAccessTokenResponse, error) {
+	out := new(ParseAccessTokenResponse)
+	err := c.cc.Invoke(ctx, "/jwt.JwtService/ParseAccessToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ type JwtServiceServer interface {
 	GenerateTokens(context.Context, *GenerateTokensRequest) (*GenerateTokensResponse, error)
 	RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error)
 	RemoveAllTokensForUser(context.Context, *RemoveAllTokensForUserRequest) (*emptypb.Empty, error)
-	IsValidAccessToken(context.Context, *IsValidAccessTokenRequest) (*emptypb.Empty, error)
+	ParseAccessToken(context.Context, *ParseAccessTokenRequest) (*ParseAccessTokenResponse, error)
 	mustEmbedUnimplementedJwtServiceServer()
 }
 
@@ -97,8 +97,8 @@ func (UnimplementedJwtServiceServer) RefreshTokens(context.Context, *RefreshToke
 func (UnimplementedJwtServiceServer) RemoveAllTokensForUser(context.Context, *RemoveAllTokensForUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveAllTokensForUser not implemented")
 }
-func (UnimplementedJwtServiceServer) IsValidAccessToken(context.Context, *IsValidAccessTokenRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsValidAccessToken not implemented")
+func (UnimplementedJwtServiceServer) ParseAccessToken(context.Context, *ParseAccessTokenRequest) (*ParseAccessTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ParseAccessToken not implemented")
 }
 func (UnimplementedJwtServiceServer) mustEmbedUnimplementedJwtServiceServer() {}
 
@@ -167,20 +167,20 @@ func _JwtService_RemoveAllTokensForUser_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JwtService_IsValidAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IsValidAccessTokenRequest)
+func _JwtService_ParseAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParseAccessTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JwtServiceServer).IsValidAccessToken(ctx, in)
+		return srv.(JwtServiceServer).ParseAccessToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/jwt.JwtService/IsValidAccessToken",
+		FullMethod: "/jwt.JwtService/ParseAccessToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JwtServiceServer).IsValidAccessToken(ctx, req.(*IsValidAccessTokenRequest))
+		return srv.(JwtServiceServer).ParseAccessToken(ctx, req.(*ParseAccessTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -205,8 +205,8 @@ var JwtService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _JwtService_RemoveAllTokensForUser_Handler,
 		},
 		{
-			MethodName: "IsValidAccessToken",
-			Handler:    _JwtService_IsValidAccessToken_Handler,
+			MethodName: "ParseAccessToken",
+			Handler:    _JwtService_ParseAccessToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

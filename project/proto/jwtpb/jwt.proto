@@ -10,7 +10,7 @@ service JwtService {
   rpc GenerateTokens (GenerateTokensRequest) returns (GenerateTokensResponse);
   rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
   rpc RemoveAllTokensForUser (RemoveAllTokensForUserRequest) returns (google.protobuf.Empty);
-  rpc IsValidAccessToken (IsValidAccessTokenRequest) returns (google.protobuf.Empty);
+  rpc ParseAccessToken (ParseAccessTokenRequest) returns (ParseAccessTokenResponse);
 }
 
 message GenerateTokensRequest {
@@ -32,11 +32,16 @@ message RefreshTokensResponse {
 }
 
 message RemoveAllTokensForUserRequest {
-  string AccessToken = 1;
+  string access_token = 1;
 }
 
-message IsValidAccessTokenRequest {
-  string AccessToken = 1;
+message ParseAccessTokenRequest {
+  string access_token = 1;
+}
+
+message ParseAccessTokenResponse {
+  int32 user_id = 1;
+  string username = 2;
 }
 
 message TokenPair {

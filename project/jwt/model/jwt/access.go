@@ -24,12 +24,12 @@ type AccessTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-func NewAccessTokenClaims(id int, username string) *AccessTokenClaims {
+func NewAccessTokenClaims(userId int, username string) *AccessTokenClaims {
 	now := time.Now()
 	ttl, _ := time.ParseDuration(accessTTL)
 
 	return &AccessTokenClaims{
-		UserId:   id,
+		UserId:   userId,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
